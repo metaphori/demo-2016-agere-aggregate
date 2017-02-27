@@ -43,12 +43,8 @@ class AgereDemo extends AggregateProgram with BuildingBlocks with SensorDefiniti
 
   /* Core logic */
   def main = rep[Result]((Ok,Idle)){ case (lastStatus, wasActing) =>
-    var isActing = if(recentlyTrue(t_act, lastStatus==Alert)) {
-      act()
-      Acts
-    } else{
-      Idle
-    }
+    val isWorking = recentlyTrue(t_act, lastStatus==Alert)
+    val isActing = branch[IsActing](isWorking) { act(); Acts } { Idle }
 
     (branch(withoutFailuresSince(t_fail)) {
       val areaLeader = S(grain = meanDist, metric = nbrRange)
